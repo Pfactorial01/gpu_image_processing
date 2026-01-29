@@ -309,8 +309,6 @@ python test_client.py path/to/image.jpg
 - **Additional Filters**: Canny Edge Detection, Bilateral Filter, Median Filter
 - **Level 3 & 4 Optimizations**: Advanced techniques for all filters
 - **Batch Processing**: Process multiple images simultaneously
-- **GPU Profiling Integration**: Real-time Nsight Compute metrics in UI
-- **Image Download**: Save processed images directly from web interface
 
 ## License
 
