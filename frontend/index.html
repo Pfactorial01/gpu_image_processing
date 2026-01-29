@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU Image Processing - Web Interface</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-3xl font-bold text-gray-900">⚡ GPU Image Processing</h1>
+            <p class="text-sm text-gray-600 mt-1">High-performance CUDA-accelerated image filters</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Upload Section -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Upload Image</h2>
+            
+            <!-- Drag and Drop Zone -->
+            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-blue-400 transition-colors">
+                <div id="dropZoneContent">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-4h4m-4-4v4m0 4v4m0-4h4m-4-4h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p class="mt-4 text-gray-600">Drag and drop an image here, or</p>
+                    <label for="fileInput" class="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer">
+                        Browse Files
+                    </label>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                </div>
+                <div id="imagePreview" class="hidden">
+                    <img id="previewImg" src="" alt="Preview" class="max-h-64 mx-auto rounded-lg shadow-md">
+                    <p id="imageInfo" class="mt-2 text-sm text-gray-600"></p>
+                    <button id="removeImage" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Remove Image
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filter Controls -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Settings</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Filter Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter Type</label>
+                    <select id="filterType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="gaussian">Gaussian Blur</option>
+                        <option value="box">Box Blur</option>
+                        <option value="sobel">Sobel Edge Detection</option>
+                    </select>
+                </div>
+
+                <!-- Info about automatic processing -->
+                <div class="col-span-2">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-800">
+                            <span class="font-semibold">ℹ️ Automatic Performance Comparison:</span> 
+                            The image will be processed with <strong>all available optimization levels</strong> automatically. 
+                            Results and performance metrics will be displayed for comparison.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Parameters -->
+            <div id="filterParams" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Sigma (Gaussian only) -->
+                <div id="sigmaControl" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Sigma: <span id="sigmaValue">2.0</span>
+                    </label>
+                    <input type="range" id="sigmaSlider" min="0.5" max="20" step="0.1" value="2.0" 
+                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- Radius -->
+                <div id="radiusControl">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Radius: <span id="radiusValue">3</span>
+                    </label>
+                    <input type="range" id="radiusSlider" min="1" max="15" step="1" value="3" 
+                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Process Button -->
+            <div class="mt-6">
+                <button id="processBtn" disabled class="w-full px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Process Image
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 text-center">
+                <div class="spinner"></div>
+                <p class="mt-4 text-gray-700 font-medium">Processing image...</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="hidden">
+            <!-- Images Comparison -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Results</h2>
+                
+                <div id="imageComparison" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Original -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Original</h3>
+                        <img id="originalImg" src="" alt="Original" class="w-full rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity" onclick="expandImage(this)">
+                    </div>
+                    
+                    <!-- Processed Level 1 -->
+                    <div id="result1Container">
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Level 1 Result</h3>
+                        <img id="result1Img" src="" alt="Result 1" class="w-full rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity" onclick="expandImage(this)">
+                    </div>
+                    
+                    <!-- Processed Level 2 -->
+                    <div id="result2Container" class="hidden">
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Level 2 Result</h3>
+                        <img id="result2Img" src="" alt="Result 2" class="w-full rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity" onclick="expandImage(this)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Nsight Compute Performance Metrics</h2>
+                <p class="text-sm text-gray-600 mb-4">Detailed GPU profiling metrics from NVIDIA Nsight Compute</p>
+                
+                <!-- Metrics Table (scrollable if too long) -->
+                <div class="overflow-x-auto mb-6 border border-gray-200 rounded-lg shadow-sm" style="max-height: 500px; overflow-y: auto;">
+                    <div class="metrics-container">
+                        <table id="metricsTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                                <th id="level1Header" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level 1</th>
+                                <th id="level2Header" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Level 2</th>
+                                <th id="speedupHeader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Speedup</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metricsBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Performance Charts</h3>
+                    <div id="chartsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="chart-wrapper bg-gray-50 p-4 rounded-lg" style="min-height: 300px;">
+                            <h4 class="text-md font-medium text-gray-700 mb-2">Execution Time (ms)</h4>
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper bg-gray-50 p-4 rounded-lg" style="min-height: 300px;">
+                            <h4 class="text-md font-medium text-gray-700 mb-2">Memory Bandwidth (GB/s)</h4>
+                            <canvas id="bandwidthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md z-50">
+            <div class="flex items-center justify-between">
+                <p id="errorText"></p>
+                <button id="closeError" class="ml-4 text-white hover:text-gray-200 text-2xl leading-none">×</button>
+            </div>
+        </div>
+
+        <!-- Image Modal -->
+        <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onclick="closeImageModal(event)">
+            <div class="relative max-w-7xl max-h-full w-full">
+                <!-- Close Button -->
+                <button id="closeModal" class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-70 transition-all" onclick="event.stopPropagation(); closeImageModal()">×</button>
+                
+                <!-- Previous Button -->
+                <button id="prevImageBtn" class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-70 transition-all" onclick="event.stopPropagation(); navigateImage(-1)" title="Previous image (←)">
+                    ‹
+                </button>
+                
+                <!-- Next Button -->
+                <button id="nextImageBtn" class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-70 transition-all" onclick="event.stopPropagation(); navigateImage(1)" title="Next image (→)">
+                    ›
+                </button>
+                
+                <!-- Image Container -->
+                <div class="flex flex-col items-center" onclick="event.stopPropagation()">
+                    <img id="modalImage" src="" alt="Expanded view" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl">
+                    <p id="modalCaption" class="text-white text-center mt-4 text-lg"></p>
+                    <p id="modalCounter" class="text-white text-center mt-2 text-sm opacity-75"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,98 @@
+# Build directories
+build/
+out/
+cmake-build-*/
+
+# Python
+venv/
+env/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+*.egg-link
+dist/
+.eggs/
+
+# Python bindings (compiled module)
+backend/gpu_filters*.so
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# CUDA / C++ build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.fatbin
+*.fatbin.c
+*.cubin
+*.ptx
+*.module_id
+*.i
+*.ii
+*.s
+*.d
+*.rsp
+*.ts
+*.internal
+*.make
+progress.marks
+DependInfo.cmake
+TargetDirectories.txt
+CompilerId*/
+tmp/
+
+# Test binaries (from build/)
+test_box_blur
+test_gaussian_blur
+test_comparison
+test_real_image
+
+# Nsight Compute / profiling
+/tmp/ncu_profile_*/
+*.ncu-rep
+*.ncu-rep.*
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+.cache/
+
+# Local / env files (if any)
+.env
+.env.local
+*.local

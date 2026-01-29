@@ -1,0 +1,17 @@
+# Python Backend Requirements for GPU Image Processing
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Image Processing
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# API Utilities
+python-multipart>=0.0.6
+pydantic>=2.0.0
+
+# Python bindings will be built separately with pybind11
+# pybind11>=2.11.0  (installed via pip for development)
+
