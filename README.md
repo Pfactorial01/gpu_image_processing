@@ -2,6 +2,12 @@
 
 A high-performance CUDA-accelerated image processing library with a web-based interface for real-time filter comparison and performance analysis.
 
+## UI Preview
+
+![GPU Image Processing UI - Upload and Filter Controls](ui_image_1.png)
+
+![GPU Image Processing UI - Results and Nsight Metrics](ui_image_2.png)
+
 ## Features
 
 - **Three Image Filters**: Gaussian Blur, Box Blur, and Sobel Edge Detection
